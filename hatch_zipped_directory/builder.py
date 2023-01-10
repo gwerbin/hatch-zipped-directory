@@ -22,16 +22,24 @@ __all__ = ["ZippedDirectoryBuilder"]
 
 
 class ZipArchive:
-    def __init__(self, zipfd: ZipFile, root_path: str):
+    root_path: str | None
+    zipfd: ZipFile
+
+    def __init__(self, zipfd: ZipFile, root_path: str | None):
         self.root_path = root_path
         self.zipfd = zipfd
 
+    def _prepend_root_path(self, path: str) -> str:
+        if self.root_path is not None:
+            path = f"{self.root_path}/{path}"
+        return path
+
     def add_file(self, included_file: IncludedFile) -> None:
-        arcname = f"{self.root_path}/{included_file.distribution_path}"
+        arcname = self._prepend_root_path(included_file.distribution_path)
         self.zipfd.write(included_file.path, arcname=arcname)
 
     def write_file(self, path: str, data: bytes | str) -> None:
-        arcname = f"{self.root_path}/{path}"
+        arcname = self._prepend_root_path(path)
         self.zipfd.writestr(arcname, data)
 
     @classmethod
@@ -57,7 +65,12 @@ class ZippedDirectoryBuilder(BuilderInterface):
         project_name = self.normalize_file_name_component(self.metadata.core.raw_name)
         target = Path(directory, f"{project_name}-{self.metadata.version}.zip")
 
-        install_name: str = build_data["install_name"]
+        install_name: str | None = build_data["install_name"]
+        # The empty string is a special case to signal that the user does not want any
+        # prefix in the archive filenames at all. This can be useful when deploying to
+        # some remote systems, such as AWS Lambda and Snowflake.
+        if install_name == '':
+            install_name = None
 
         with ZipArchive.open(target, install_name) as archive:
             for included_file in self.recurse_included_files():

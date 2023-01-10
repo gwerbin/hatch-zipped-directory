@@ -11,7 +11,8 @@ a custom builder to support building zip archives for quasi-manual
 installation into various foreign package installation systems.
 (Specifically, I use this for packaging
 [Inkscape](https://inkscape.org/) extensions and symbols libraries,
-but it may be useful in other contexts.)
+but it may be useful in other contexts, such as deploying to cloud
+compute platforms.)
 
 The builder creates a zip archive.  All the contents of the zip
 archive will be included under a single specific top-level directory.
@@ -19,6 +20,7 @@ The default name of the top-level directory is a file-name-safe
 version of the project name, however the name of the directory may be
 configured by setting the `install-name` key in the target-specific
 configuration section.
+This behavior may be disabled by setting `install-name = ''`.
 
 In addition to whatever files are selected for inclusion in the
 archive via Hatch’s regular [build configuration
@@ -28,7 +30,7 @@ the install directory within the zip archive.
 
 As well, a `METADATA.json` file containing the project metadata in
 JSON format (as described in
-[PEP566](https://peps.python.org/pep-0566/#json-compatible-metadata))
+[PEP 566](https://peps.python.org/pep-0566/#json-compatible-metadata))
 will be included in the top level of the install directory within the
 zip archive.
 
@@ -79,7 +81,7 @@ will build a zip archive named `dist/test_project-0.42.zip` with the following
 structure:
 ```
 .
-└── org.example.tests
+└── org.example.test
     ├── LICENSE.txt
     ├── METADATA.json
     ├── README.md
